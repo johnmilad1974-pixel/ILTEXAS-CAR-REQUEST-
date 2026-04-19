@@ -1,0 +1,6 @@
+{
+  "name": "ILTEXAS AOH Car Request Portal",
+  "description": "A centralized car request system for ILTexas Houston Area, allowing staff to request vehicles and view availability in real-time.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}

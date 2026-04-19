@@ -1,0 +1,24 @@
+{
+  "entities": {
+    "Reservation": {
+      "title": "Reservation",
+      "description": "A vehicle reservation record.",
+      "type": "object",
+      "properties": {
+        "requesterName": { "type": "string" },
+        "carId": { "type": "string" },
+        "startDate": { "type": "string", "format": "date-time" },
+        "endDate": { "type": "string", "format": "date-time" },
+        "requestDate": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["approved", "pending", "cancelled"] }
+      },
+      "required": ["requesterName", "carId", "startDate", "endDate", "requestDate"]
+    }
+  },
+  "firestore": {
+    "/reservations/{reservationId}": {
+      "schema": "Reservation",
+      "description": "Collection of all car reservations."
+    }
+  }
+}

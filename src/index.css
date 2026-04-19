@@ -1,0 +1,21 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Cinzel", serif;
+
+  --color-maroon-900: #3a0515;
+  --color-maroon-800: #50071F;
+  --color-maroon-700: #6b0a2a;
+  --color-maroon-600: #8a0d36;
+  --color-gold-500: #C5A059;
+  --color-gold-600: #B48D44;
+  --color-gold-400: #D4B67C;
+}
+
+@layer base {
+  body {
+    @apply bg-[#FAF9F6] text-slate-900 antialiased;
+  }
+}
