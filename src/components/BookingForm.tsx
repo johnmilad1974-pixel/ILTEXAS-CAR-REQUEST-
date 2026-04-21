@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Vehicle, Reservation } from '../types';
 import { User, Calendar, Loader2, AlertCircle, Save, X, Car, Info, ChevronRight } from 'lucide-react';
 import { motion } from 'motion/react';
-import { format, addDays, startOfToday, areIntervalsOverlapping } from 'date-fns';
+import { format, addDays, startOfToday, areIntervalsOverlapping, endOfMonth } from 'date-fns';
 import { createReservation, updateReservation } from '../services/reservationService';
 import { VEHICLES } from '../constants/vehicles';
 
@@ -11,11 +11,12 @@ interface BookingFormProps {
   editingReservation?: Reservation;
   existingReservations: Reservation[];
   currentUser: string;
+  isAdmin: boolean;
   onSuccess: () => void;
   onCancel: () => void;
 }
 
-export default function BookingForm({ initialVehicle, editingReservation, existingReservations, currentUser, onSuccess, onCancel }: BookingFormProps) {
+export default function BookingForm({ initialVehicle, editingReservation, existingReservations, currentUser, isAdmin, onSuccess, onCancel }: BookingFormProps) {
   const [selectedCarId, setSelectedCarId] = useState(editingReservation?.carId || initialVehicle?.id || '');
   const [name, setName] = useState(editingReservation?.requesterName || currentUser);
   const [startDate, setStartDate] = useState(
@@ -30,6 +31,17 @@ export default function BookingForm({ initialVehicle, editingReservation, existi
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Check if current user is exempt from booking restrictions
+  const isExempt = isAdmin || name.toLowerCase().trim() === 'carlos chaanine';
+
+  // Calculate the maximum allowed booking date: end of current month + 7 days
+  const today = startOfToday();
+  const lastDayOfMonth = endOfMonth(today);
+  const maxBookingDate = addDays(lastDayOfMonth, 7);
+  
+  // If exempt, provide no restriction (undefined max) or a very far future date
+  const maxDateStr = isExempt ? undefined : format(maxBookingDate, 'yyyy-MM-dd');
 
   const selectedVehicle = VEHICLES.find(v => v.id === selectedCarId);
 
@@ -174,6 +186,7 @@ export default function BookingForm({ initialVehicle, editingReservation, existi
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
                   min={format(startOfToday(), 'yyyy-MM-dd')}
+                  max={maxDateStr}
                 />
               </div>
             </div>
@@ -190,6 +203,7 @@ export default function BookingForm({ initialVehicle, editingReservation, existi
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
                   min={startDate}
+                  max={maxDateStr}
                 />
               </div>
             </div>

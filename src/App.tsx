@@ -103,12 +103,19 @@ export function App() {
 
   const exportToCSV = () => {
     const now = new Date();
-    const headers = ['Staff', 'Car', 'Plate', 'From', 'Until'];
+    const headers = ['Staff Personnel', 'Assigned Vehicle', 'Plate', 'From', 'Until', 'Requested On'];
     const rows = reservations
       .filter(r => isSameMonth(new Date(r.startDate), now) && isSameYear(new Date(r.startDate), now))
       .map(r => {
         const v = VEHICLES.find(veh => veh.id === r.carId);
-        return [r.requesterName, v?.nickName || '', v?.plate || '', format(r.startDate, 'MM/dd'), format(r.endDate, 'MM/dd')];
+        return [
+          r.requesterName, 
+          v?.nickName || '', 
+          v?.plate || '', 
+          format(r.startDate, 'MM/dd'), 
+          format(r.endDate, 'MM/dd'),
+          r.requestDate ? format(r.requestDate, 'yyyy-MM-dd HH:mm') : '---'
+        ];
       });
 
     const csvContent = [headers, ...rows].map(e => e.join(',')).join('\n');
@@ -315,7 +322,8 @@ export function App() {
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {VEHICLES.map((v, idx) => {
-              const available = isCarAvailableNow(v.id);
+              // Only show "Assigned" status for TODAY's date, but keep the card active.
+              const assignedToday = !isCarAvailableNow(v.id);
               return (
                 <motion.div 
                   initial={{ opacity: 0, y: 30 }}
@@ -325,15 +333,15 @@ export function App() {
                   key={v.id} 
                   className="group bg-white rounded-none border border-slate-200 shadow-sm hover:shadow-2xl transition-all duration-500 relative flex flex-col pt-1"
                 >
-                  <div className={`h-1.5 w-full ${available ? 'bg-gold-500' : 'bg-maroon-800'}`} />
+                  <div className={`h-1.5 w-full ${assignedToday ? 'bg-maroon-800' : 'bg-gold-500'}`} />
                   
                   <div className="p-10 flex flex-col h-full">
                     <div className="flex justify-between items-start mb-8">
-                       <div className={`w-14 h-14 border flex items-center justify-center transition-all group-hover:bg-maroon-800 group-hover:text-gold-400 duration-500 ${available ? 'bg-slate-50 border-slate-100 text-maroon-800' : 'bg-maroon-900 border-maroon-800 text-gold-400'}`}>
+                       <div className={`w-14 h-14 border flex items-center justify-center transition-all group-hover:bg-maroon-800 group-hover:text-gold-400 duration-500 bg-slate-50 border-slate-100 text-maroon-800`}>
                           <Car className="w-6 h-6" />
                        </div>
-                       <span className={`px-4 py-1.5 text-[9px] font-black uppercase tracking-[0.2em] font-display border ${available ? 'bg-gold-50 border-gold-200 text-gold-700' : 'bg-maroon-50 border-maroon-100 text-maroon-700'}`}>
-                          {available ? 'Available' : 'Assigned'}
+                       <span className={`px-4 py-1.5 text-[9px] font-black uppercase tracking-[0.2em] font-display border ${assignedToday ? 'bg-maroon-50 border-maroon-100 text-maroon-700' : 'bg-gold-50 border-gold-200 text-gold-700'}`}>
+                          {assignedToday ? 'Assigned' : 'Available'}
                        </span>
                     </div>
                     
@@ -344,9 +352,9 @@ export function App() {
 
                     <button 
                       onClick={() => { setSelectedVehicle(v); setShowBookingForm(true); }}
-                      className={`mt-10 w-full py-4 font-display font-black text-[10px] uppercase tracking-[0.2em] transition-all border ${available ? 'bg-maroon-800 text-gold-400 border-maroon-700 hover:bg-maroon-900' : 'bg-slate-50 border-slate-100 text-slate-300 cursor-not-allowed'}`}
+                      className={`mt-10 w-full py-4 font-display font-black text-[10px] uppercase tracking-[0.2em] transition-all border bg-maroon-800 text-gold-400 border-maroon-700 hover:bg-maroon-900 shadow-lg active:scale-95`}
                     >
-                      {available ? 'Select Unit' : 'Schedule View'}
+                      Select Unit
                     </button>
                   </div>
                 </motion.div>
@@ -362,13 +370,13 @@ export function App() {
               <h3 className="text-4xl font-display font-black text-maroon-800 tracking-tight uppercase">Operational Activity</h3>
             </div>
           </div>
-
           <div className="bg-white rounded-none border border-slate-200 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.1)] overflow-hidden">
-             <div className="p-6 bg-slate-50 border-b border-slate-100 flex items-center justify-between text-[10px] font-black text-slate-600 uppercase tracking-[0.3em] px-16">
-                <span className="w-1/3 text-left">Staff Personnel</span>
-                <span className="w-1/4">Assigned Asset</span>
-                <span className="w-1/4 text-center">Window</span>
-                <span className="w-24 text-right">Log Data</span>
+             <div className="p-8 bg-slate-50/50 border-b border-slate-100 grid grid-cols-[1.3fr_1fr_1fr_1fr_100px] items-center text-[10px] font-black text-slate-600 uppercase tracking-[0.3em] px-16">
+                <span className="text-left">Staff Personnel</span>
+                <span className="text-left">Assigned Vehicle</span>
+                <span className="text-center">Date of Use</span>
+                <span className="text-center">Requesting Date</span>
+                <span className=""></span>
              </div>
 
              <div className="flex flex-col relative divide-y divide-slate-100">
@@ -394,11 +402,11 @@ export function App() {
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.9, x: 20 }}
                             key={`${res.id || idx}`} 
-                            className={`group flex items-center px-16 py-10 border-b border-slate-100 hover:bg-slate-50 transition-all duration-500 relative ${isNow ? 'bg-gold-50/20' : ''}`}
+                            className={`group grid grid-cols-[1.3fr_1fr_1fr_1fr_100px] items-center px-16 py-12 border-b border-slate-100 hover:bg-slate-50 transition-all duration-500 relative ${isNow ? 'bg-maroon-50/60 ring-2 ring-inset ring-maroon-800/10' : ''}`}
                           >
-                            {isNow && <div className="absolute inset-y-0 left-0 w-1.5 bg-maroon-800" />}
+                            {isNow && <div className="absolute inset-y-0 left-0 w-2.5 bg-maroon-800 shadow-[2px_0_15px_rgba(128,0,0,0.4)]" />}
                             
-                            <div className="w-1/3 flex items-center gap-6">
+                            <div className="flex items-center gap-6">
                                <div className={`w-14 h-14 rounded-none border flex items-center justify-center flex-shrink-0 font-display font-black text-xl shadow-sm transition-all duration-500 ${isNow ? 'bg-maroon-800 text-gold-400 border-maroon-700' : 'bg-slate-50 text-slate-300 group-hover:bg-white group-hover:text-maroon-800 group-hover:border-slate-200'}`}>
                                  {res.requesterName.charAt(0)}
                                </div>
@@ -407,20 +415,35 @@ export function App() {
                                  {isNow && (
                                    <div className="flex items-center gap-1.5">
                                       <div className="w-1.5 h-1.5 bg-gold-500 rounded-full animate-pulse" />
-                                      <span className="text-[9px] font-black uppercase text-gold-600 tracking-[0.1em] font-sans">Active Deployment</span>
+                                      <span className="text-[9px] font-black uppercase text-maroon-800 tracking-[0.1em] font-sans">Deployment Active</span>
                                    </div>
                                  )}
                                </div>
                             </div>
 
-                            <div className="w-1/4 text-left">
+                            <div className="text-left">
                                <div className="flex flex-col gap-1">
                                  <span className="text-sm font-black text-slate-800 uppercase tracking-tight">{vehicle?.nickName}</span>
-                                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest tracking-[0.2em]">{vehicle?.plate}</span>
+                                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">{vehicle?.plate}</span>
+                                 {isNow && (
+                                   <motion.div 
+                                     initial={{ opacity: 0, x: -5 }}
+                                     animate={{ opacity: 1, x: 0 }}
+                                     className="mt-2"
+                                   >
+                                     <span className="inline-flex items-center gap-2 px-3 py-1 bg-maroon-800 text-gold-400 text-[8px] font-black uppercase tracking-widest rounded-none shadow-[4px_4px_0_rgba(128,0,0,0.2)] border border-maroon-700">
+                                       <div className="relative flex h-2 w-2">
+                                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gold-400 opacity-75"></span>
+                                         <span className="relative inline-flex rounded-full h-2 w-2 bg-gold-500"></span>
+                                       </div>
+                                       Car In Use Today
+                                     </span>
+                                   </motion.div>
+                                 )}
                                </div>
                             </div>
 
-                            <div className="w-1/4 flex flex-col items-center gap-2">
+                            <div className="flex flex-col items-center gap-2">
                                <div className="flex items-center gap-3 bg-white px-5 py-2.5 rounded-none border border-slate-200 transition-all shadow-sm">
                                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{format(res.startDate, 'MMM d')}</span>
                                  <div className="w-3 h-px bg-slate-300" />
@@ -428,7 +451,13 @@ export function App() {
                                </div>
                             </div>
 
-                            <div className="w-24 flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="flex flex-col items-center justify-center">
+                               <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest text-center">
+                                 {res.requestDate ? format(res.requestDate, 'MMM d, p') : '---'}
+                               </span>
+                            </div>
+
+                            <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                <button 
                                  onClick={() => setVerifyModal({ res, action: 'edit' })} 
                                  className="p-3 text-slate-300 hover:text-maroon-800 transition-all active:scale-90"
@@ -468,6 +497,7 @@ export function App() {
                 editingReservation={editingReservation || undefined}
                 existingReservations={reservations}
                 currentUser={staffName}
+                isAdmin={isAdmin}
                 onCancel={() => { setSelectedVehicle(null); setEditingReservation(null); setShowBookingForm(false); }}
                 onSuccess={() => { setSelectedVehicle(null); setEditingReservation(null); setShowBookingForm(false); triggerSuccess(editingReservation ? 'Record Updated' : 'Booking Logged'); }}
               />
