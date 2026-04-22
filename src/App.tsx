@@ -103,7 +103,7 @@ export function App() {
 
   const exportToCSV = () => {
     const now = new Date();
-    const headers = ['Staff Personnel', 'Assigned Vehicle', 'Plate', 'From', 'Until', 'Requested On'];
+    const headers = ['Staff Name', 'Assigned Vehicle', 'Plate', 'From', 'Until', 'Requested On'];
     const rows = reservations
       .filter(r => isSameMonth(new Date(r.startDate), now) && isSameYear(new Date(r.startDate), now))
       .map(r => {
@@ -339,7 +339,7 @@ export function App() {
           </div>
           <div className="bg-white rounded-none border border-slate-200 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.1)] overflow-hidden">
              <div className="p-8 bg-slate-50/50 border-b border-slate-100 grid grid-cols-[1.3fr_1fr_1fr_1fr_100px] items-center text-[10px] font-black text-slate-600 uppercase tracking-[0.3em] px-16">
-                <span className="text-left">Staff Personnel</span>
+                <span className="text-left">Staff Name</span>
                 <span className="text-left">Assigned Vehicle</span>
                 <span className="text-center">Date of Use</span>
                 <span className="text-center">Requesting Date</span>
