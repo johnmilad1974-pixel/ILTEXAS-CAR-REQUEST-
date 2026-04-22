@@ -32,16 +32,16 @@ export default function BookingForm({ initialVehicle, editingReservation, existi
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Check if current user is exempt from booking restrictions
-  const isExempt = isAdmin || name.toLowerCase().trim() === 'carlos chaanine';
-
   // Calculate the maximum allowed booking date: end of current month + 7 days
   const today = startOfToday();
   const lastDayOfMonth = endOfMonth(today);
-  const maxBookingDate = addDays(lastDayOfMonth, 7);
+  const nextMonthLimit = addDays(lastDayOfMonth, 7);
   
-  // If exempt, provide no restriction (undefined max) or a very far future date
-  const maxDateStr = isExempt ? undefined : format(maxBookingDate, 'yyyy-MM-dd');
+  // Exception: Admin and Carlos Chaanine can book throughout the entire year (and beyond)
+  const normalizedName = name.toLowerCase().trim();
+  const isCarlos = normalizedName === 'carlos chaanine';
+  const isExempt = isAdmin || isCarlos;
+  const maxDateStr = isExempt ? undefined : format(nextMonthLimit, 'yyyy-MM-dd');
 
   const selectedVehicle = VEHICLES.find(v => v.id === selectedCarId);
 
@@ -92,6 +92,8 @@ export default function BookingForm({ initialVehicle, editingReservation, existi
           requesterName: name,
           startDate: start.getTime(),
           endDate: end.getTime(),
+          status: editingReservation.status || 'approved',
+          requestDate: editingReservation.requestDate || Date.now(),
         });
       } else {
         await createReservation({

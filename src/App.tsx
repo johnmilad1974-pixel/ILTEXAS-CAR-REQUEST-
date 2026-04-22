@@ -21,12 +21,13 @@ export function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [staffName, setStaffName] = useState('');
-  const [loginInput, setLoginInput] = useState('');
-  const [showAdminModal, setShowAdminModal] = useState(false);
-  const [adminCode, setAdminCode] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [adminPin, setAdminPin] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [verifyModal, setVerifyModal] = useState<{ res: Reservation; action: 'edit' | 'delete' } | null>(null);
-  const [verifyName, setVerifyName] = useState('');
+  const [verifyFirstName, setVerifyFirstName] = useState('');
+  const [verifyLastName, setVerifyLastName] = useState('');
   const [verifyError, setVerifyError] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -47,13 +48,14 @@ export function App() {
 
   const handleAdminLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (adminCode === '7324') {
+    if (adminPin === '7324') {
       setIsAdmin(true);
-      setShowAdminModal(false);
-      setAdminCode('');
+      setIsLoggedIn(true);
+      setStaffName('Administrator');
+      setAdminPin('');
       triggerSuccess('Admin access enabled');
     } else {
-      alert('Invalid code');
+      alert('Invalid PIN');
     }
   };
 
@@ -61,7 +63,17 @@ export function App() {
     if (!verifyModal || isProcessing) return;
     
     const { res, action } = verifyModal;
-    const isAuthorized = isAdmin || verifyName.toLowerCase().trim() === res.requesterName.toLowerCase().trim();
+    const vFName = verifyFirstName.trim();
+    const vLName = verifyLastName.trim();
+
+    // If admin is in the modal (fallback), they don't need name validation
+    if (!isAdmin && (!vFName || !vLName)) {
+      alert('Please enter both First and Last Name for authorization.');
+      return;
+    }
+
+    const verifiedName = `${vFName} ${vLName}`;
+    const isAuthorized = isAdmin || verifiedName.toLowerCase() === res.requesterName.toLowerCase().trim();
 
     if (isAuthorized) {
       setIsProcessing(true);
@@ -73,7 +85,8 @@ export function App() {
             setEditingReservation(res);
             setShowBookingForm(true);
             setVerifyModal(null);
-            setVerifyName('');
+            setVerifyFirstName('');
+            setVerifyLastName('');
             setVerifyError(false);
           } else {
             alert('Vehicle reference found corrupted.');
@@ -85,7 +98,8 @@ export function App() {
           await deleteReservation(resId);
           triggerSuccess('Log Permanently Erased');
           setVerifyModal(null);
-          setVerifyName('');
+          setVerifyFirstName('');
+          setVerifyLastName('');
           setVerifyError(false);
         }
       } catch (err: any) {
@@ -98,14 +112,18 @@ export function App() {
     }
   };
 
-  const currentMonthReservations = reservations
-    .filter(r => isSameMonth(new Date(r.startDate), new Date()) && isSameYear(new Date(r.startDate), new Date()));
+  const activeReservations = reservations
+    .filter(r => {
+      const resDate = new Date(r.startDate);
+      const now = new Date();
+      // Show if it's this month, this year, or in the future
+      return (isSameMonth(resDate, now) && isSameYear(resDate, now)) || resDate > now;
+    });
 
   const exportToCSV = () => {
     const now = new Date();
     const headers = ['Staff Name', 'Assigned Vehicle', 'Plate', 'From', 'Until', 'Requested On'];
-    const rows = reservations
-      .filter(r => isSameMonth(new Date(r.startDate), now) && isSameYear(new Date(r.startDate), now))
+    const rows = activeReservations
       .map(r => {
         const v = VEHICLES.find(veh => veh.id === r.carId);
         return [
@@ -134,24 +152,27 @@ export function App() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (loginInput.trim() === '7324') {
-      setIsAdmin(true);
-      setIsLoggedIn(true);
-      setStaffName('Administrator');
-      triggerSuccess('Admin access granted');
-    } else if (loginInput.trim().length >= 3) {
-      setIsLoggedIn(true);
-      setStaffName(loginInput);
-      triggerSuccess(`Welcome, ${loginInput}`);
-    } else {
-      alert('Please enter a valid Staff Full Name');
+    const fName = firstName.trim();
+    const lName = lastName.trim();
+
+    if (!fName || !lName) {
+      alert('Please complete both First Name and Last Name fields.');
+      return;
     }
+
+    const combinedName = `${fName} ${lName}`;
+    setIsLoggedIn(true);
+    setStaffName(combinedName);
+    setFirstName(fName);
+    setLastName(lName);
+    triggerSuccess(`Welcome, ${combinedName}`);
   };
 
   const logout = () => {
     setIsLoggedIn(false);
     setIsAdmin(false);
-    setLoginInput('');
+    setFirstName('');
+    setLastName('');
     setStaffName('');
   };
 
@@ -165,54 +186,99 @@ export function App() {
         </div>
 
         <motion.div 
-          initial={{ opacity: 0, scale: 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="bg-white max-w-lg w-full rounded-none shadow-[0_50px_100px_-20px_rgba(0,0,0,0.6)] text-center relative z-10 overflow-hidden border border-maroon-800/10"
+          className="bg-white max-w-xl w-full rounded-none shadow-[0_50px_100px_-20px_rgba(0,0,0,0.6)] text-center relative z-10 overflow-hidden border border-maroon-800/10"
         >
           {/* Presidential Top Bar */}
           <div className="h-4 bg-maroon-800" />
           <div className="h-1 bg-gold-500" />
 
-          <div className="p-10 space-y-10">
-
+          <div className="p-10 space-y-12">
             <div className="flex flex-col items-center pt-2">
-              <h2 className="text-3xl font-display font-black text-maroon-900 uppercase tracking-tighter sm:text-4xl lg:text-5xl leading-none mb-4">
+              <h2 className="text-3xl font-display font-black text-maroon-900 uppercase tracking-tighter sm:text-4xl leading-none mb-4">
                 ILTEXAS AOH
               </h2>
-              <h2 className="text-3xl font-display font-black text-maroon-900 uppercase tracking-tighter sm:text-4xl lg:text-5xl leading-none">
+              <h2 className="text-3xl font-display font-black text-maroon-900 uppercase tracking-tighter sm:text-4xl leading-none">
                 CAR REQUEST PORTAL
               </h2>
-              <div className="flex items-center justify-center gap-4 mt-12 w-full px-4 text-slate-200">
-                <div className="h-px bg-slate-200 flex-grow" />
-                <p className="text-slate-500 font-bold uppercase tracking-[0.3em] text-[10px] whitespace-nowrap">International Leadership of Texas</p>
-                <div className="h-px bg-slate-200 flex-grow" />
+              <div className="flex items-center justify-center gap-4 mt-8 w-full px-4 text-slate-200">
+                <div className="h-px bg-slate-100 flex-grow" />
+                <p className="text-slate-400 font-bold uppercase tracking-[0.3em] text-[9px] whitespace-nowrap">Governance & Logistics</p>
+                <div className="h-px bg-slate-100 flex-grow" />
               </div>
             </div>
 
-            <form onSubmit={handleLogin} className="space-y-6 text-left">
-              <div className="space-y-3">
-                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">IDENTITY VERIFICATION</label>
-                <input 
-                  autoFocus
-                  type="text" 
-                  placeholder="Enter Staff Full Name" 
-                  className="w-full px-6 py-4 bg-white border border-slate-200 rounded-none focus:outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 transition-all font-semibold shadow-sm placeholder:text-slate-300"
-                  value={loginInput}
-                  onChange={(e) => setLoginInput(e.target.value)}
-                />
+            <div className="space-y-12 divide-y divide-slate-100">
+              {/* Personnel Login Section */}
+              <div className="space-y-6 text-left">
+                <div className="flex items-center gap-4 mb-2">
+                   <div className="h-0.5 w-8 bg-maroon-800" />
+                   <h3 className="text-[10px] font-black text-maroon-800 uppercase tracking-widest">Staff Personnel Access</h3>
+                </div>
+                <form onSubmit={handleLogin} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">First Name</p>
+                      <input 
+                        type="text" 
+                        placeholder="e.g. John" 
+                        className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-none focus:outline-none focus:border-maroon-800 transition-all font-semibold shadow-sm placeholder:text-slate-200"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">Last Name</p>
+                      <input 
+                        type="text" 
+                        placeholder="e.g. Doe" 
+                        className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-none focus:outline-none focus:border-maroon-800 transition-all font-semibold shadow-sm placeholder:text-slate-200"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <button 
+                    type="submit" 
+                    className="w-full py-5 bg-maroon-800 text-gold-400 font-display font-black text-[10px] uppercase tracking-[0.2em] hover:bg-maroon-900 transition-all shadow-lg active:scale-[0.98]"
+                  >
+                    Personnel Sign In
+                  </button>
+                </form>
               </div>
-              <button 
-                type="submit" 
-                className="w-full py-5 bg-maroon-800 text-gold-400 font-display font-black text-xs uppercase tracking-[0.2em] hover:bg-maroon-900 transition-all shadow-lg active:scale-[0.98]"
-              >
-                SECURE SIGN IN
-              </button>
-            </form>
+
+              {/* Administrative Login Section */}
+              <div className="space-y-6 text-left pt-12">
+                <div className="flex items-center gap-4 mb-2">
+                   <div className="h-0.5 w-8 bg-gold-500" />
+                   <h3 className="text-[10px] font-black text-gold-600 uppercase tracking-widest">Administrative Access</h3>
+                </div>
+                <form onSubmit={handleAdminLogin} className="space-y-4">
+                  <div className="space-y-2">
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">Override PIN</p>
+                    <input 
+                      type="password" 
+                      placeholder="••••" 
+                      className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-none focus:outline-none focus:border-gold-500 transition-all font-semibold shadow-sm placeholder:text-slate-200 text-center text-2xl tracking-[0.5em]"
+                      value={adminPin}
+                      onChange={(e) => setAdminPin(e.target.value)}
+                    />
+                  </div>
+                  <button 
+                    type="submit" 
+                    className="w-full py-5 bg-white border-2 border-maroon-800 text-maroon-800 font-display font-black text-[10px] uppercase tracking-[0.2em] hover:bg-maroon-50 transition-all active:scale-[0.98]"
+                  >
+                    Admin Authorization
+                  </button>
+                </form>
+              </div>
+            </div>
             
-            <div className="flex items-center justify-center gap-4 text-[10px] font-bold text-slate-300 uppercase tracking-widest pt-2">
+            <div className="flex items-center justify-center gap-4 text-[10px] font-bold text-slate-300 uppercase tracking-widest pt-4">
               <ShieldCheck size={14} />
-              <span>Security Protocols Active</span>
+              <span>Institutional Protocol Active</span>
             </div>
           </div>
         </motion.div>
@@ -348,7 +414,7 @@ export function App() {
 
              <div className="flex flex-col relative divide-y divide-slate-100">
                 <AnimatePresence mode="popLayout">
-                  {currentMonthReservations.length === 0 ? (
+                  {activeReservations.length === 0 ? (
                     <motion.div key="empty" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="py-60 text-center flex flex-col items-center justify-center">
                        <div className="w-28 h-28 bg-white shadow-2xl shadow-indigo-100 rounded-[3rem] flex items-center justify-center mb-8 border border-slate-50">
                          <Info size={44} className="text-indigo-200" />
@@ -356,7 +422,7 @@ export function App() {
                        <p className="text-xl font-display font-black text-slate-300 uppercase tracking-widest">No active logs found</p>
                     </motion.div>
                   ) : (
-                    currentMonthReservations
+                    activeReservations
                       .sort((a, b) => b.requestDate - a.requestDate)
                       .map((res, idx) => {
                         const vehicle = VEHICLES.find(v => v.id === res.carId);
@@ -426,20 +492,36 @@ export function App() {
 
                             <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                <button 
-                                 onClick={() => setVerifyModal({ res, action: 'edit' })} 
-                                 className="p-3 text-slate-300 hover:text-maroon-800 transition-all active:scale-90"
+                                 type="button"
+                                 onClick={(e) => {
+                                   e.stopPropagation();
+                                   if (isAdmin) {
+                                     const vehicle = VEHICLES.find(v => v.id === res.carId);
+                                     if (vehicle) {
+                                       setSelectedVehicle(vehicle);
+                                       setEditingReservation(res);
+                                       setShowBookingForm(true);
+                                     }
+                                   } else {
+                                     setVerifyModal({ res, action: 'edit' });
+                                   }
+                                 }} 
+                                 className="p-3 text-slate-300 hover:text-maroon-800 transition-all active:scale-95"
                                >
                                  <Edit3 size={16} />
                                </button>
                                <button 
-                                 onClick={() => {
+                                 type="button"
+                                 onClick={async (e) => {
+                                   e.stopPropagation();
                                    if (!res.id) {
-                                     alert("Identifier lookup error.");
-                                     return;
+                                      alert("Identifier lookup error.");
+                                      return;
                                    }
+                                   // Admins use the modal for consistency but it skips name entry
                                    setVerifyModal({ res, action: 'delete' });
                                  }} 
-                                 className="p-3 text-slate-300 hover:text-maroon-800 transition-all active:scale-90"
+                                 className="p-3 text-slate-300 hover:text-rose-600 transition-all active:scale-95"
                                >
                                  <Trash2 size={16} />
                                </button>
@@ -472,27 +554,6 @@ export function App() {
           </motion.div>
         )}
 
-        {showAdminModal && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] flex items-center justify-center p-8 backdrop-blur-sm bg-maroon-900/60">
-            <motion.div 
-              initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 20, opacity: 0 }}
-              className="bg-white p-16 rounded-none shadow-2xl max-w-md w-full text-center relative pt-1"
-            >
-              <div className="h-2 w-full absolute top-0 left-0 bg-gold-500" />
-              <div className="w-20 h-20 bg-slate-50 text-maroon-800 border border-slate-100 flex items-center justify-center mx-auto mb-10">
-                <Key className="w-10 h-10" />
-              </div>
-              <h3 className="text-3xl font-display font-black text-maroon-800 mb-2 uppercase">Auth Terminal</h3>
-              <p className="text-slate-400 text-[9px] font-black uppercase tracking-[0.3em] mb-12">System Override Required</p>
-              <form onSubmit={handleAdminLogin} className="space-y-6">
-                <input autoFocus type="password" placeholder="••••" className="w-full text-center text-5xl font-display font-black py-8 bg-slate-50 border border-slate-200 focus:border-gold-500 outline-none transition-all placeholder:text-slate-100 rounded-none uppercase" value={adminCode} onChange={(e) => setAdminCode(e.target.value)} />
-                <button type="submit" className="w-full py-6 bg-maroon-800 text-gold-400 font-display font-black text-xs uppercase tracking-widest hover:bg-maroon-900 transition-all shadow-xl">Activate Admin Mode</button>
-                <button type="button" onClick={() => setShowAdminModal(false)} className="w-full text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-maroon-800 pt-2 transition-colors">Abort Access</button>
-              </form>
-            </motion.div>
-          </motion.div>
-        )}
-
         {verifyModal && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[150] flex items-center justify-center p-8 backdrop-blur-sm bg-maroon-900/40">
             <motion.div 
@@ -503,17 +564,30 @@ export function App() {
                 <AlertTriangle className="w-12 h-12" />
               </div>
               <h3 className="text-4xl font-display font-black text-maroon-800 mb-4 uppercase">{verifyModal.action === 'delete' ? 'Erase Record?' : 'Authorize Change'}</h3>
+              <div className="bg-slate-50 border border-slate-100 p-4 mb-8 inline-block mx-auto">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Record Owner</span>
+                <span className="text-xl font-display font-black text-maroon-900 uppercase">{verifyModal.res.requesterName}</span>
+              </div>
               <p className="text-slate-400 text-sm mb-12 font-medium max-w-sm mx-auto leading-relaxed">
-                {isAdmin ? "Admin permissions active. This action will be memorialized in the permanent operational log." : "To proceed with edit or delete, please re-enter your Staff Full Name for authorization."}
+                {isAdmin ? "Admin permissions active. This action will be memorialized in the permanent operational log." : `This record belongs to ${verifyModal.res.requesterName}. Please re-enter your First and Last Name as shown above to authorize this action.`}
               </p>
               {!isAdmin && (
-                <div className="relative mb-12 group">
-                   <input autoFocus type="text" placeholder="Full Staff Name" className={`w-full px-10 py-6 bg-slate-50 border border-slate-200 rounded-none focus:border-maroon-800 outline-none transition-all font-display font-black text-2xl text-center ${verifyError ? 'text-rose-500 border-rose-500' : 'text-slate-900'}`} value={verifyName} onChange={(e) => { setVerifyName(e.target.value); setVerifyError(false); }} />
-                   {verifyError && <motion.p initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className="absolute -bottom-10 left-0 right-0 text-[9px] font-black text-rose-600 uppercase tracking-widest">Unauthorized Access Denied</motion.p>}
+                <div className="space-y-4 mb-12">
+                   <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1 text-left">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">First Name</p>
+                        <input autoFocus type="text" placeholder="John" className={`w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-none focus:border-maroon-800 outline-none transition-all font-display font-black text-xl text-center ${verifyError ? 'text-rose-500 border-rose-500' : 'text-slate-900'}`} value={verifyFirstName} onChange={(e) => { setVerifyFirstName(e.target.value); setVerifyError(false); }} />
+                      </div>
+                      <div className="space-y-1 text-left">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Last Name</p>
+                        <input type="text" placeholder="Doe" className={`w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-none focus:border-maroon-800 outline-none transition-all font-display font-black text-xl text-center ${verifyError ? 'text-rose-500 border-rose-500' : 'text-slate-900'}`} value={verifyLastName} onChange={(e) => { setVerifyLastName(e.target.value); setVerifyError(false); }} />
+                      </div>
+                   </div>
+                   {verifyError && <motion.p initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className="text-[9px] font-black text-rose-600 uppercase tracking-widest text-center mt-4">Unauthorized — Identity Mismatch</motion.p>}
                 </div>
               )}
               <div className="flex gap-6">
-                 <button onClick={() => { setVerifyModal(null); setVerifyName(''); setVerifyError(false); }} className="flex-1 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-maroon-800 transition-colors">Discard Request</button>
+                 <button onClick={() => { setVerifyModal(null); setVerifyFirstName(''); setVerifyLastName(''); setVerifyError(false); }} className="flex-1 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-maroon-800 transition-colors">Discard Request</button>
                  <button 
                   onClick={handleVerify} 
                   disabled={isProcessing}
