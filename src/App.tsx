@@ -162,15 +162,6 @@ export function App() {
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-maroon-900 via-maroon-950 to-black opacity-80" />
           <div className="absolute inset-0 opacity-[0.07]" style={{ backgroundImage: 'repeating-linear-gradient(45deg, #000, #000 1px, transparent 1px, transparent 20px)' }} />
-          {/* Subtle logo watermark in background */}
-          <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
-            <img 
-              src="https://images.niche.com/47a2f9b7c0098f98c6000e70?width=1200" 
-              alt="" 
-              className="w-full max-w-4xl rotate-12"
-              referrerPolicy="no-referrer"
-            />
-          </div>
         </div>
 
         <motion.div 
@@ -184,17 +175,9 @@ export function App() {
           <div className="h-1 bg-gold-500" />
 
           <div className="p-10 space-y-10">
-            <div>
-              <img 
-                src="https://images.niche.com/47a2f9b7c0098f98c6000e70?width=400" 
-                alt="" 
-                className="h-32 mx-auto object-contain"
-                referrerPolicy="no-referrer"
-              />
-            </div>
 
             <div className="flex flex-col items-center pt-2">
-              <h2 className="text-3xl font-display font-black text-maroon-900 uppercase tracking-tighter sm:text-4xl lg:text-5xl leading-none mb-4 -translate-y-8">
+              <h2 className="text-3xl font-display font-black text-maroon-900 uppercase tracking-tighter sm:text-4xl lg:text-5xl leading-none mb-4">
                 ILTEXAS AOH
               </h2>
               <h2 className="text-3xl font-display font-black text-maroon-900 uppercase tracking-tighter sm:text-4xl lg:text-5xl leading-none">
@@ -242,14 +225,6 @@ export function App() {
       {/* Institutional Pattern Layer */}
       <div className="fixed inset-0 opacity-[0.03] pointer-events-none z-0" style={{ backgroundImage: 'repeating-linear-gradient(45deg, #000, #000 1px, transparent 1px, transparent 20px)' }} />
 
-      <div className="fixed inset-0 z-[100] pointer-events-none opacity-[0.5] flex items-center justify-center select-none">
-         <img 
-           src="https://images.niche.com/47a2f9b7c0098f98c6000e70?width=800" 
-           alt="" 
-           className="w-[60%] max-w-none drop-shadow-[0_0_30px_rgba(255,255,255,0.4)]"
-           referrerPolicy="no-referrer"
-         />
-      </div>
       {/* Institutional Header */}
       <header className="sticky top-0 z-40 bg-white border-b-4 border-gold-500 shadow-xl transition-all duration-500">
         <div className="max-w-7xl mx-auto px-8 h-28 flex items-center justify-between">
@@ -258,15 +233,7 @@ export function App() {
             animate={{ opacity: 1, x: 0 }}
             className="flex items-center gap-6"
           >
-             <div className="h-20 w-20 flex items-center justify-center group overflow-hidden">
-               <img 
-                 src="https://images.niche.com/47a2f9b7c0098f98c6000e70?width=200" 
-                 alt="" 
-                 className="h-16 object-contain group-hover:scale-110 transition-transform duration-500"
-                 referrerPolicy="no-referrer"
-               />
-             </div>
-             <div className="flex flex-col justify-between h-20 -mt-2 py-1">
+             <div className="flex flex-col justify-between h-14 py-1">
                <span className="text-xl font-display font-black tracking-tighter text-maroon-800 uppercase leading-none sm:text-2xl lg:text-3xl">ILTEXAS AOH</span>
                <h1 className="text-xl font-display font-black tracking-tighter text-maroon-800 leading-none uppercase sm:text-2xl lg:text-3xl whitespace-nowrap">
                  CAR REQUEST PORTAL
