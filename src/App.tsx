@@ -12,6 +12,36 @@ import { format, isSameMonth, isSameYear } from 'date-fns';
 import { motion, AnimatePresence } from 'motion/react';
 import BookingForm from './components/BookingForm';
 
+export function LiveClock() {
+  const [time, setTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="bg-white border border-slate-200 shadow-xl px-12 py-6 text-center relative group overflow-hidden min-w-[320px]">
+      <div className="absolute top-0 left-0 w-full h-1.5 bg-maroon-800" />
+      <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-1">Institutional Chronometer</p>
+      <div className="flex flex-col items-center">
+        <div className="flex items-baseline gap-2">
+          <p className="text-4xl font-display font-black text-maroon-900 uppercase tracking-tight tabular-nums leading-none">
+            {format(time, 'hh:mm:ss')}
+          </p>
+          <span className="text-sm font-display font-black text-gold-600 uppercase">
+            {format(time, 'aa')}
+          </span>
+        </div>
+        <span className="text-[9px] font-bold text-maroon-800/40 uppercase tracking-[0.1em] mt-2">Precision Sync Active</span>
+      </div>
+      <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:rotate-12 group-hover:scale-110 transition-all duration-700">
+        <Clock size={80} className="text-maroon-800" />
+      </div>
+    </div>
+  );
+}
+
 export function App() {
   // State
   const [reservations, setReservations] = useState<Reservation[]>([]);
@@ -203,9 +233,7 @@ export function App() {
               <h2 className="text-3xl font-display font-black text-maroon-900 uppercase tracking-tighter sm:text-4xl leading-none">
                 CAR REQUEST PORTAL
               </h2>
-              <div className="flex items-center justify-center gap-4 mt-8 w-full px-4 text-slate-200">
-                <div className="h-px bg-slate-100 flex-grow" />
-                <p className="text-slate-400 font-bold uppercase tracking-[0.3em] text-[9px] whitespace-nowrap">Governance & Logistics</p>
+              <div className="flex items-center justify-center gap-4 mt-8 w-full px-4">
                 <div className="h-px bg-slate-100 flex-grow" />
               </div>
             </div>
@@ -215,7 +243,7 @@ export function App() {
               <div className="space-y-6 text-left">
                 <div className="flex items-center gap-4 mb-2">
                    <div className="h-0.5 w-8 bg-maroon-800" />
-                   <h3 className="text-[10px] font-black text-maroon-800 uppercase tracking-widest">Staff Personnel Access</h3>
+                   <h3 className="text-[10px] font-black text-maroon-800 uppercase tracking-widest">Staff Access</h3>
                 </div>
                 <form onSubmit={handleLogin} className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
@@ -346,6 +374,21 @@ export function App() {
       </header>
 
       <main className="max-w-7xl mx-auto px-8 py-20 space-y-32 relative z-10">
+        {/* Current Date Display */}
+        <section className="border-b-4 border-slate-200 pb-12 flex flex-col sm:flex-row items-center justify-between gap-8">
+           <div className="flex flex-col gap-2 text-center sm:text-left">
+              <span className="text-maroon-800 font-display font-black text-xs uppercase tracking-[0.5em]">Global Temporal Status</span>
+              <div className="flex items-center gap-4 justify-center sm:justify-start">
+                 <div className="w-1.5 h-12 bg-gold-500" />
+                 <h2 className="text-5xl sm:text-6xl font-display font-black text-maroon-900 uppercase tracking-tighter leading-none">
+                    {format(new Date(), 'MMMM dd, yyyy')}
+                 </h2>
+              </div>
+           </div>
+           
+           <LiveClock />
+        </section>
+
         {/* Select a Vehicle Grid */}
         <section>
           <div className="flex items-center gap-8 mb-16 border-l-8 border-maroon-800 pl-8">
