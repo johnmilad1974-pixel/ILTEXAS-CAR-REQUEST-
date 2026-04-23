@@ -8,7 +8,7 @@ import { VEHICLES } from './constants/vehicles';
 import { Reservation, Vehicle } from './types';
 import { subscribeToReservations, deleteReservation, archiveOldReservations } from './services/reservationService';
 import { Car, Calendar, ShieldCheck, Trash2, Edit3, Lock, LogOut, CheckCircle, Search, Clock, ChevronRight, List, Download, Key, AlertTriangle, ExternalLink, Info, Loader2 } from 'lucide-react';
-import { format, isSameMonth, isSameYear } from 'date-fns';
+import { format, isSameMonth, isSameYear, startOfWeek, addDays, isSameDay, areIntervalsOverlapping, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
 import { motion, AnimatePresence } from 'motion/react';
 import BookingForm from './components/BookingForm';
 
@@ -70,10 +70,31 @@ export function App() {
     setTimeout(() => setSuccessMsg(''), 3000);
   };
 
-  const isCarAvailableNow = (carId: string) => {
-    const now = Date.now();
-    return !reservations.some(r => r.carId === carId && r.status === 'approved' && now >= r.startDate && now <= r.endDate);
+  const isCarAvailableOnDate = (carId: string, date: Date) => {
+    const dayStart = new Date(date);
+    dayStart.setHours(0, 0, 0, 0);
+    const dayEnd = new Date(date);
+    dayEnd.setHours(23, 59, 59, 999);
+    
+    return !reservations.some(r => 
+      r.carId === carId && 
+      r.status === 'approved' && 
+      areIntervalsOverlapping(
+        { start: dayStart, end: dayEnd },
+        { start: new Date(r.startDate), end: new Date(r.endDate) },
+        { inclusive: true }
+      )
+    );
   };
+
+  const getBookingWindowDays = () => {
+    const now = new Date();
+    const start = startOfMonth(now);
+    const end = addDays(endOfMonth(now), 7);
+    return eachDayOfInterval({ start, end });
+  };
+
+  const bookingWindowDays = getBookingWindowDays();
 
   const handleAdminLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -403,10 +424,10 @@ export function App() {
               <h2 className="text-5xl font-display font-black text-maroon-800 tracking-tight uppercase">Select a Vehicle</h2>
             </div>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-10">
             {VEHICLES.map((v, idx) => {
               // Only show "Assigned" status for TODAY's date, but keep the card active.
-              const assignedToday = !isCarAvailableNow(v.id);
+              const assignedToday = !isCarAvailableOnDate(v.id, new Date());
               return (
                 <motion.div 
                   initial={{ opacity: 0, y: 30 }}
@@ -414,7 +435,7 @@ export function App() {
                   viewport={{ once: true }}
                   transition={{ delay: idx * 0.05 }}
                   key={v.id} 
-                  className="group bg-white rounded-none border border-slate-200 shadow-sm hover:shadow-2xl transition-all duration-500 relative flex flex-col pt-1"
+                  className="group bg-white rounded-none border border-slate-200 shadow-sm hover:shadow-2xl transition-all duration-500 relative flex flex-col pt-1 min-h-[580px]"
                 >
                   <div className={`h-1.5 w-full ${assignedToday ? 'bg-maroon-800' : 'bg-gold-500'}`} />
                   
@@ -428,14 +449,61 @@ export function App() {
                        </span>
                     </div>
                     
-                    <div className="mb-auto">
+                    <div className="mb-6">
                        <h4 className="text-xl font-display font-black text-maroon-800 leading-tight group-hover:text-gold-600 transition-colors uppercase tracking-tight">{v.nickName}</h4>
                        <p className="text-[10px] font-black text-slate-700 uppercase tracking-widest mt-2">{v.plate} <span className="mx-2 opacity-50">•</span> {v.model}</p>
                     </div>
 
+                    {/* Monthly Status Calendar */}
+                    <div className="mt-4 mb-8 pt-6 border-t border-slate-100">
+                      <div className="flex items-center justify-between mb-4 px-1">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-maroon-800">Availability</span>
+                        <span className="text-[8px] font-bold uppercase text-slate-400">{format(new Date(), 'MMMM yyyy')}</span>
+                      </div>
+                      <div className="grid grid-cols-7 gap-1">
+                        {bookingWindowDays.map((date) => {
+                          const available = isCarAvailableOnDate(v.id, date);
+                          const isToday = isSameDay(date, new Date());
+                          const isNextMonth = !isSameMonth(date, new Date());
+                          
+                          return (
+                            <div 
+                              key={date.toISOString()} 
+                              className={`aspect-square flex flex-col items-center justify-center relative border transition-all ${
+                                isToday ? 'border-maroon-800 ring-1 ring-maroon-800 ring-inset' : 'border-slate-50'
+                              }`}
+                            >
+                              <span className={`text-[8px] font-black leading-none mb-1 ${
+                                isToday ? 'text-maroon-900 font-black' : isNextMonth ? 'text-slate-300' : 'text-slate-500'
+                              }`}>
+                                {format(date, 'd')}
+                              </span>
+                              <div className="flex h-1.5 w-1.5">
+                                {available ? (
+                                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.5)]"></span>
+                                ) : (
+                                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-rose-500 shadow-[0_0_4px_rgba(244,63,94,0.5)]"></span>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <div className="flex items-center justify-center gap-4 mt-4">
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                          <span className="text-[7px] font-black uppercase text-slate-400">Available</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                          <span className="text-[7px] font-black uppercase text-slate-400">Reserved</span>
+                        </div>
+                      </div>
+                    </div>
+
                     <button 
                       onClick={() => { setSelectedVehicle(v); setShowBookingForm(true); }}
-                      className={`mt-10 w-full py-4 font-display font-black text-[10px] uppercase tracking-[0.2em] transition-all border bg-maroon-800 text-gold-400 border-maroon-700 hover:bg-maroon-900 shadow-lg active:scale-95`}
+                      className={`mt-auto w-full py-4 font-display font-black text-[10px] uppercase tracking-[0.2em] transition-all border bg-maroon-800 text-gold-400 border-maroon-700 hover:bg-maroon-900 shadow-lg active:scale-95`}
                     >
                       Select Unit
                     </button>
@@ -472,7 +540,7 @@ export function App() {
                        <p className="text-xl font-display font-black text-slate-300 uppercase tracking-widest">No active logs found</p>
                     </motion.div>
                   ) : (
-                    activeReservations
+                    [...activeReservations]
                       .sort((a, b) => a.startDate - b.startDate)
                       .map((res, idx) => {
                         const vehicle = VEHICLES.find(v => v.id === res.carId);
@@ -484,7 +552,7 @@ export function App() {
                             initial={{ opacity: 0, scale: 0.98 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.9, x: 20 }}
-                            key={`${res.id || idx}`} 
+                            key={res.id || `res-${idx}`} 
                             className={`group grid grid-cols-[1.3fr_1fr_1fr_1fr_100px] items-center px-16 py-12 border-b border-slate-100 hover:bg-slate-50 transition-all duration-500 relative ${isNow ? 'bg-maroon-50/60 ring-2 ring-inset ring-maroon-800/10' : ''}`}
                           >
                             {isNow && <div className="absolute inset-y-0 left-0 w-2.5 bg-maroon-800 shadow-[2px_0_15px_rgba(128,0,0,0.4)]" />}

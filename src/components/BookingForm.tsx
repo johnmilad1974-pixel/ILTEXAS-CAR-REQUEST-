@@ -125,9 +125,6 @@ export default function BookingForm({ initialVehicle, editingReservation, existi
         </button>
         <div className="flex items-center gap-4 mb-3">
           <div className="w-1.5 h-6 bg-gold-500" />
-          <span className="text-[9px] font-black uppercase tracking-[0.3em] text-gold-400/80 block">
-            Institutional Asset Control
-          </span>
         </div>
         <h3 className="text-3xl font-display font-black tracking-tight uppercase">{editingReservation ? 'Edit Operational Log' : 'New Log Authorization'}</h3>
       </div>
@@ -177,7 +174,7 @@ export default function BookingForm({ initialVehicle, editingReservation, existi
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] pl-1">
-                Initiate Date
+                Date of Use
               </label>
               <div className="relative group">
                 <Calendar className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-maroon-800 transition-colors" />
@@ -194,7 +191,7 @@ export default function BookingForm({ initialVehicle, editingReservation, existi
             </div>
             <div className="space-y-2">
               <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] pl-1">
-                Conclude Date
+                Date of Return
               </label>
               <div className="relative group">
                 <Calendar className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-maroon-800 transition-colors" />
@@ -219,14 +216,20 @@ export default function BookingForm({ initialVehicle, editingReservation, existi
           </motion.div>
         )}
 
-        <div className="pt-4">
+        <div className="pt-4 relative group">
+          {!available && selectedCarId && (
+            <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] font-bold px-4 py-2 rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-xl z-50">
+               Not available to book — please choose another day
+               <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-900 rotate-45" />
+            </div>
+          )}
           <button
             type="submit"
             disabled={loading || !available || !selectedCarId}
             className={`w-full py-5 px-8 rounded-none font-display font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-3 shadow-xl ${
               available && selectedCarId
                 ? 'bg-maroon-800 text-gold-400 hover:bg-maroon-900 shadow-maroon-100/50 active:scale-[0.98]' 
-                : 'bg-slate-100 text-slate-300 cursor-not-allowed shadow-none'
+                : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
             }`}
           >
             {loading ? (
@@ -234,7 +237,7 @@ export default function BookingForm({ initialVehicle, editingReservation, existi
             ) : (
               <>
                 <Save className="w-4 h-4" />
-                <span>{editingReservation ? 'Commit Modifications' : 'Authorize Log Entry'}</span>
+                <span>{editingReservation ? 'Commit Modifications' : (available ? 'Available to Book' : 'Not Available')}</span>
               </>
             )}
           </button>
