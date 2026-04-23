@@ -271,9 +271,9 @@ export function App() {
                   </div>
                   <button 
                     type="submit" 
-                    className="w-full py-5 bg-maroon-800 text-gold-400 font-display font-black text-[10px] uppercase tracking-[0.2em] hover:bg-maroon-900 transition-all shadow-lg active:scale-[0.98]"
+                    className="w-full py-5 bg-maroon-800 text-gold-400 font-display font-black text-lg uppercase tracking-[0.2em] hover:bg-maroon-900 transition-all shadow-lg active:scale-[0.98]"
                   >
-                    Personnel Sign In
+                    Sign IN
                   </button>
                 </form>
               </div>
@@ -287,13 +287,27 @@ export function App() {
                 <form onSubmit={handleAdminLogin} className="space-y-4">
                   <div className="space-y-2">
                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-1">Override PIN</p>
-                    <input 
-                      type="password" 
-                      placeholder="••••" 
-                      className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-none focus:outline-none focus:border-gold-500 transition-all font-semibold shadow-sm placeholder:text-slate-200 text-center text-2xl tracking-[0.5em]"
-                      value={adminPin}
-                      onChange={(e) => setAdminPin(e.target.value)}
-                    />
+                    <div className="relative group cursor-text">
+                      <input 
+                        type="password" 
+                        maxLength={4}
+                        className="absolute inset-0 w-full h-full opacity-0 z-20 cursor-text"
+                        value={adminPin}
+                        onChange={(e) => setAdminPin(e.target.value.replace(/[^0-9]/g, ''))}
+                        autoFocus
+                      />
+                      <div className={`w-full px-6 py-4 bg-slate-50 border transition-all rounded-none flex items-center justify-center gap-4 text-3xl font-black h-[66px] shadow-sm ${adminPin ? 'border-maroon-800' : 'border-slate-100 group-hover:border-slate-200'}`}>
+                        {[0, 1, 2, 3].map((i) => (
+                          <div key={i} className="w-8 flex justify-center">
+                            {adminPin.length > i ? (
+                              <span className="text-maroon-900 animate-in zoom-in-50 duration-200">*</span>
+                            ) : (
+                              <span className="text-slate-200">*</span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                   <button 
                     type="submit" 
