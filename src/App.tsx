@@ -7,7 +7,7 @@ import React, { useState, useEffect } from 'react';
 import { VEHICLES } from './constants/vehicles';
 import { Reservation, Vehicle } from './types';
 import { subscribeToReservations, deleteReservation, archiveOldReservations } from './services/reservationService';
-import { Car, Calendar, ShieldCheck, Trash2, Edit3, Lock, LogOut, CheckCircle, Search, Clock, ChevronRight, List, Download, Eraser, Key, AlertTriangle, ExternalLink, Info, Loader2 } from 'lucide-react';
+import { Car, Calendar, ShieldCheck, Trash2, Edit3, Lock, LogOut, CheckCircle, Search, Clock, ChevronRight, List, Download, Key, AlertTriangle, ExternalLink, Info, Loader2 } from 'lucide-react';
 import { format, isSameMonth, isSameYear } from 'date-fns';
 import { motion, AnimatePresence } from 'motion/react';
 import BookingForm from './components/BookingForm';
@@ -172,12 +172,6 @@ export function App() {
     const a = document.createElement('a'); a.href = url; a.download = `Fleet_Report_${format(now, 'MMM_yyyy')}.csv`;
     a.click();
     triggerSuccess('CSV Exported');
-  };
-
-  const handleWipe = async () => {
-    if (confirm('Wipe old archives?')) {
-      try { await archiveOldReservations(); triggerSuccess('Board Cleaned & Archived'); } catch (err: any) { alert('Failed: ' + err.message); }
-    }
   };
 
   const handleLogin = (e: React.FormEvent) => {
@@ -372,7 +366,6 @@ export function App() {
               {isAdmin && (
                 <>
                   <button onClick={exportToCSV} title="Download CSV" className="p-4 text-slate-400 hover:text-maroon-800 transition-all"><Download size={20}/></button>
-                  <button onClick={handleWipe} title="Wipe Old Records" className="p-4 text-slate-400 hover:text-rose-600 transition-all"><Eraser size={20}/></button>
                 </>
               )}
               <button 
