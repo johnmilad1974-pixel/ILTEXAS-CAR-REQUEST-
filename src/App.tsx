@@ -164,16 +164,16 @@ export function App() {
 
   const activeReservations = reservations
     .filter(r => {
-      const resDate = new Date(r.startDate);
-      const now = new Date();
-      // Show if it's this month, this year, or in the future
-      return (isSameMonth(resDate, now) && isSameYear(resDate, now)) || resDate > now;
+      const now = Date.now();
+      // Show only if the reservation hasn't ended yet
+      return r.endDate >= now;
     });
 
   const exportToCSV = () => {
     const now = new Date();
     const headers = ['Staff Name', 'Assigned Vehicle', 'Plate', 'From', 'Until', 'Requested On'];
-    const rows = [...activeReservations]
+    // Use the full reservations list for the report, including historical data
+    const rows = [...reservations]
       .sort((a, b) => a.startDate - b.startDate)
       .map(r => {
         const v = VEHICLES.find(veh => veh.id === r.carId);
