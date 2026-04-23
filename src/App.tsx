@@ -350,7 +350,7 @@ export function App() {
 
       {/* Institutional Header */}
       <header className="sticky top-0 z-40 bg-white border-b-4 border-gold-500 shadow-xl transition-all duration-500">
-        <div className="max-w-7xl mx-auto px-8 h-28 flex items-center justify-between">
+        <div className="w-full px-12 h-28 flex items-center justify-between">
           <motion.div 
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -401,7 +401,7 @@ export function App() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-8 py-20 space-y-32 relative z-10">
+      <main className="w-full px-12 py-20 space-y-32 relative z-10">
         {/* Current Date Display */}
         <section className="border-b-4 border-slate-200 pb-12 flex flex-col sm:flex-row items-center justify-between gap-8">
            <div className="flex flex-col gap-2 text-center sm:text-left">
@@ -424,7 +424,7 @@ export function App() {
               <h2 className="text-5xl font-display font-black text-maroon-800 tracking-tight uppercase">Select a Vehicle</h2>
             </div>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-12">
             {VEHICLES.map((v, idx) => {
               // Only show "Assigned" status for TODAY's date, but keep the card active.
               const assignedToday = !isCarAvailableOnDate(v.id, new Date());
@@ -480,7 +480,7 @@ export function App() {
                               </span>
                               <div className="flex h-1.5 w-1.5">
                                 {available ? (
-                                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.5)]"></span>
+                                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.5)] animate-pulse"></span>
                                 ) : (
                                   <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-rose-500 shadow-[0_0_4px_rgba(244,63,94,0.5)]"></span>
                                 )}
@@ -491,7 +491,7 @@ export function App() {
                       </div>
                       <div className="flex items-center justify-center gap-4 mt-4">
                         <div className="flex items-center gap-1.5">
-                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                           <span className="text-[7px] font-black uppercase text-slate-400">Available</span>
                         </div>
                         <div className="flex items-center gap-1.5">
@@ -522,7 +522,7 @@ export function App() {
             </div>
           </div>
           <div className="bg-white rounded-none border border-slate-200 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.1)] overflow-hidden">
-             <div className="p-8 bg-slate-50/50 border-b border-slate-100 grid grid-cols-[1.3fr_1fr_1fr_1fr_100px] items-center text-[10px] font-black text-slate-600 uppercase tracking-[0.3em] px-16">
+             <div className="p-12 bg-slate-50/50 border-b border-slate-100 grid grid-cols-[1.3fr_1fr_1fr_1fr_100px] items-center text-xs font-black text-slate-600 uppercase tracking-[0.3em] px-24">
                 <span className="text-left">Staff Name</span>
                 <span className="text-left">Assigned Vehicle</span>
                 <span className="text-center">Date of Use</span>
@@ -553,7 +553,7 @@ export function App() {
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.9, x: 20 }}
                             key={res.id || `res-${idx}`} 
-                            className={`group grid grid-cols-[1.3fr_1fr_1fr_1fr_100px] items-center px-16 py-12 border-b border-slate-100 hover:bg-slate-50 transition-all duration-500 relative ${isNow ? 'bg-maroon-50/60 ring-2 ring-inset ring-maroon-800/10' : ''}`}
+                            className={`group grid grid-cols-[1.3fr_1fr_1fr_1fr_100px] items-center px-24 py-16 border-b border-slate-100 hover:bg-slate-50 transition-all duration-500 relative ${isNow ? 'bg-maroon-50/60 ring-2 ring-inset ring-maroon-800/10' : ''}`}
                           >
                             {isNow && <div className="absolute inset-y-0 left-0 w-2.5 bg-maroon-800 shadow-[2px_0_15px_rgba(128,0,0,0.4)]" />}
                             
