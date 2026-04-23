@@ -153,7 +153,8 @@ export function App() {
   const exportToCSV = () => {
     const now = new Date();
     const headers = ['Staff Name', 'Assigned Vehicle', 'Plate', 'From', 'Until', 'Requested On'];
-    const rows = activeReservations
+    const rows = [...activeReservations]
+      .sort((a, b) => a.startDate - b.startDate)
       .map(r => {
         const v = VEHICLES.find(veh => veh.id === r.carId);
         return [
@@ -466,7 +467,7 @@ export function App() {
                     </motion.div>
                   ) : (
                     activeReservations
-                      .sort((a, b) => b.requestDate - a.requestDate)
+                      .sort((a, b) => a.startDate - b.startDate)
                       .map((res, idx) => {
                         const vehicle = VEHICLES.find(v => v.id === res.carId);
                         const isNow = Date.now() >= res.startDate && Date.now() <= res.endDate;
