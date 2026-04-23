@@ -23,8 +23,7 @@ export function LiveClock() {
   return (
     <div className="bg-white border border-slate-200 shadow-xl px-12 py-6 text-center relative group overflow-hidden min-w-[320px]">
       <div className="absolute top-0 left-0 w-full h-1.5 bg-maroon-800" />
-      <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-1">Institutional Chronometer</p>
-      <div className="flex flex-col items-center">
+      <div className="flex flex-col items-center pt-2">
         <div className="flex items-baseline gap-2">
           <p className="text-4xl font-display font-black text-maroon-900 uppercase tracking-tight tabular-nums leading-none">
             {format(time, 'hh:mm:ss')}
@@ -392,7 +391,7 @@ export function App() {
         {/* Current Date Display */}
         <section className="border-b-4 border-slate-200 pb-12 flex flex-col sm:flex-row items-center justify-between gap-8">
            <div className="flex flex-col gap-2 text-center sm:text-left">
-              <span className="text-maroon-800 font-display font-black text-xs uppercase tracking-[0.5em]">Global Temporal Status</span>
+              <span className="text-maroon-800 font-display font-black text-xs uppercase tracking-[0.5em]"></span>
               <div className="flex items-center gap-4 justify-center sm:justify-start">
                  <div className="w-1.5 h-12 bg-gold-500" />
                  <h2 className="text-5xl sm:text-6xl font-display font-black text-maroon-900 uppercase tracking-tighter leading-none">
