@@ -89,12 +89,13 @@ export function App() {
 
   const getBookingWindowDays = () => {
     const now = new Date();
-    const start = startOfMonth(now);
+    const start = startOfWeek(startOfMonth(now), { weekStartsOn: 0 }); // Start from the Sunday of the week that the month begins
     const end = addDays(endOfMonth(now), 7);
     return eachDayOfInterval({ start, end });
   };
 
   const bookingWindowDays = getBookingWindowDays();
+  const weekDayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
   const handleAdminLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -461,6 +462,11 @@ export function App() {
                         <span className="text-[8px] font-bold uppercase text-slate-400">{format(new Date(), 'MMMM yyyy')}</span>
                       </div>
                       <div className="grid grid-cols-7 gap-1">
+                        {weekDayLabels.map((label, i) => (
+                          <div key={`label-${i}`} className="flex items-center justify-center h-6">
+                            <span className="text-[9px] font-black text-slate-400 uppercase">{label}</span>
+                          </div>
+                        ))}
                         {bookingWindowDays.map((date) => {
                           const available = isCarAvailableOnDate(v.id, date);
                           const isToday = isSameDay(date, new Date());
