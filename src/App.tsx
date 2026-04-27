@@ -89,13 +89,13 @@ export function App() {
 
   const getBookingWindowDays = () => {
     const now = new Date();
-    const start = startOfWeek(startOfMonth(now), { weekStartsOn: 0 }); // Start from the Sunday of the week that the month begins
+    const start = startOfWeek(startOfMonth(now), { weekStartsOn: 1 }); // Start from the Monday of the week that the month begins
     const end = addDays(endOfMonth(now), 7);
     return eachDayOfInterval({ start, end });
   };
 
   const bookingWindowDays = getBookingWindowDays();
-  const weekDayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+  const weekDayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
   const handleAdminLogin = (e: React.FormEvent) => {
     e.preventDefault();
